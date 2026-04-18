@@ -1,1 +1,1 @@
-**Mini-React Application****Mini-React Application**
+**Mini-React Application**
