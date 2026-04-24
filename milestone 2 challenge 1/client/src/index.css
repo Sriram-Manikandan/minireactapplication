@@ -1,0 +1,176 @@
+:root {
+  --primary-color: #2563eb;
+  --bg-color: #f8fafc;
+  --text-color: #1e293b;
+  --sidebar-width: 280px;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.dashboard {
+  width: 900px;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+header {
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 20px;
+}
+
+.main-content {
+  display: flex;
+  gap: 30px;
+}
+
+.task-section {
+  flex: 1;
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+}
+
+.add-task-form {
+  margin-bottom: 20px;
+}
+
+.add-task-form input {
+  padding: 10px;
+  width: 250px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+}
+
+.add-task-form button {
+  padding: 10px 20px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.task-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.task-list li {
+  padding: 10px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.task-list li.completed span {
+  text-decoration: line-through;
+  color: #94a3b8;
+}
+
+/* Focus Widget */
+.focus-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Progress Tracker */
+.progress-section {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.progress-section h3 {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  color: #15803d;
+}
+
+.progress-count {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #166534;
+  margin: 6px 0 10px 0;
+}
+
+.progress-bar-track {
+  background: #dcfce7;
+  border-radius: 999px;
+  height: 10px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  background: #22c55e;
+  height: 10px;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* Focus Timer */
+.timer-section {
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.timer-section h3 {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  color: #1d4ed8;
+}
+
+.timer-display {
+  font-size: 2.8rem;
+  font-weight: bold;
+  color: #1e40af;
+  letter-spacing: 2px;
+  margin: 10px 0;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.timer-controls button {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  background-color: var(--primary-color);
+  color: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.timer-controls button:hover {
+  background-color: #1d4ed8;
+}
+
+.timer-hint {
+  color: #64748b;
+  font-size: 0.82rem;
+  margin: 6px 0 0 0;
+}
