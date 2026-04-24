@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dev Log</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; padding: 2rem; }
+    h1 { font-size: 1.8rem; margin-bottom: 0.25rem; color: #f8fafc; }
+    .subtitle { color: #94a3b8; margin-bottom: 2rem; font-size: 0.95rem; }
+    .card { background: #1e293b; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .card h2 { font-size: 1.1rem; margin-bottom: 1rem; color: #cbd5e1; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .form-grid .full { grid-column: 1 / -1; }
+    label { display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.25rem; }
+    input, select, textarea {
+      width: 100%; padding: 0.6rem 0.75rem; border-radius: 8px;
+      border: 1px solid #334155; background: #0f172a; color: #f1f5f9;
+      font-size: 0.9rem; outline: none;
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    input:focus, select:focus, textarea:focus { border-color: #6366f1; }
+    button {
+      padding: 0.6rem 1.2rem; border-radius: 8px; border: none;
+      font-size: 0.85rem; cursor: pointer; transition: opacity 0.15s;
+    }
+    button:hover { opacity: 0.85; }
+    .btn-primary { background: #6366f1; color: white; }
+    .btn-edit { background: #0ea5e9; color: white; font-size: 0.75rem; padding: 0.3rem 0.7rem; }
+    .btn-delete { background: #ef4444; color: white; font-size: 0.75rem; padding: 0.3rem 0.7rem; }
+    .btn-save { background: #22c55e; color: white; font-size: 0.75rem; padding: 0.3rem 0.7rem; }
+    .btn-cancel { background: #475569; color: white; font-size: 0.75rem; padding: 0.3rem 0.7rem; }
+    .log-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .log-entry { background: #0f172a; border-radius: 10px; padding: 1rem; border-left: 4px solid #6366f1; }
+    .log-entry.bug { border-left-color: #ef4444; }
+    .log-entry.learning { border-left-color: #22c55e; }
+    .log-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; flex-wrap: wrap; }
+    .log-title { font-weight: 600; font-size: 0.95rem; }
+    .log-meta { font-size: 0.75rem; color: #64748b; margin-top: 0.3rem; }
+    .log-details { font-size: 0.85rem; color: #94a3b8; margin-top: 0.5rem; }
+    .badge { font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: 999px; font-weight: 600; text-transform: uppercase; }
+    .badge.bug { background: #450a0a; color: #fca5a5; }
+    .badge.learning { background: #052e16; color: #86efac; }
+    .actions { display: flex; gap: 0.4rem; margin-top: 0.75rem; }
+    .edit-form { margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .status { text-align: center; color: #64748b; padding: 2rem; }
+    .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #334155; border-top-color: #6366f1; border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 0.5rem; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-msg { color: #f87171; font-size: 0.85rem; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+
+<h1>🛠️ Dev Log</h1>
+<p class="subtitle">Track bugs you hit and things you learn — so nothing slips away.</p>
+
+<div class="card">
+  <h2>Add Entry</h2>
+  <div class="form-grid">
+    <div class="full">
+      <label>Title</label>
+      <input id="title" placeholder="e.g. useState not updating immediately" />
+    </div>
+    <div>
+      <label>Type</label>
+      <select id="type">
+        <option value="bug">🐛 Bug</option>
+        <option value="learning">💡 Learning</option>
+      </select>
+    </div>
+    <div>
+      <label>Language / Tech</label>
+      <input id="language" placeholder="e.g. JavaScript, Python, SQL" />
+    </div>
+    <div class="full">
+      <label>Details</label>
+      <textarea id="details" placeholder="What happened? What did you learn or fix?"></textarea>
+    </div>
+  </div>
+  <br/>
+  <button class="btn-primary" onclick="createLog()">+ Add to Log</button>
+  <div id="form-error" class="error-msg"></div>
+</div>
+
+<div class="card">
+  <h2>Your Entries</h2>
+  <div id="log-list" class="log-list">
+    <div class="status"><span class="spinner"></span> Connecting to backend...</div>
+  </div>
+</div>
+
+<script>
+  const BACKEND_URL = 'http://127.0.0.1:3000'; // 🔁 Replace with Render URL before deploying
+
+  async function fetchLogs() {
+    const list = document.getElementById('log-list');
+    try {
+      const res = await fetch(`${BACKEND_URL}/logs`);
+      if (!res.ok) throw new Error('Server error');
+      const logs = await res.json();
+      if (logs.length === 0) {
+        list.innerHTML = '<div class="status">No entries yet. Add your first one above.</div>';
+        return;
+      }
+      list.innerHTML = logs.map(log => renderLog(log)).join('');
+    } catch (err) {
+      list.innerHTML = `<div class="status error-msg">Could not reach backend. Is it running?</div>`;
+    }
+  }
+
+  function renderLog(log) {
+    const date = new Date(log.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    return `
+      <div class="log-entry ${log.type}" id="entry-${log._id}">
+        <div class="log-header">
+          <div>
+            <div class="log-title">${escape(log.title)}</div>
+            <div class="log-meta">${escape(log.language)} · ${date}</div>
+          </div>
+          <span class="badge ${log.type}">${log.type}</span>
+        </div>
+        <div class="log-details">${escape(log.details)}</div>
+        <div class="actions">
+          <button class="btn-edit" onclick="showEditForm('${log._id}', \`${escape(log.title)}\`, '${log.type}', \`${escape(log.language)}\`, \`${escape(log.details)}\`)">Edit</button>
+          <button class="btn-delete" onclick="deleteLog('${log._id}')">Delete</button>
+        </div>
+        <div id="edit-${log._id}"></div>
+      </div>`;
+  }
+
+  function escape(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/`/g,'&#96;');
+  }
+
+  function showEditForm(id, title, type, language, details) {
+    document.getElementById(`edit-${id}`).innerHTML = `
+      <div class="edit-form">
+        <input id="e-title-${id}" value="${title}" placeholder="Title"/>
+        <select id="e-type-${id}">
+          <option value="bug" ${type==='bug'?'selected':''}>🐛 Bug</option>
+          <option value="learning" ${type==='learning'?'selected':''}>💡 Learning</option>
+        </select>
+        <input id="e-lang-${id}" value="${language}" placeholder="Language"/>
+        <textarea id="e-details-${id}">${details}</textarea>
+        <div style="display:flex;gap:0.4rem;">
+          <button class="btn-save" onclick="updateLog('${id}')">Save</button>
+          <button class="btn-cancel" onclick="document.getElementById('edit-${id}').innerHTML=''">Cancel</button>
+        </div>
+      </div>`;
+  }
+
+  async function createLog() {
+    const errEl = document.getElementById('form-error');
+    errEl.textContent = '';
+    const body = {
+      title:    document.getElementById('title').value.trim(),
+      type:     document.getElementById('type').value,
+      language: document.getElementById('language').value.trim(),
+      details:  document.getElementById('details').value.trim()
+    };
+    if (!body.title || !body.language || !body.details) {
+      errEl.textContent = 'Please fill in all fields.'; return;
+    }
+    try {
+      const res = await fetch(`${BACKEND_URL}/logs`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error();
+      ['title','language','details'].forEach(id => document.getElementById(id).value = '');
+      fetchLogs();
+    } catch { errEl.textContent = 'Failed to add entry. Is the backend running?'; }
+  }
+
+  async function updateLog(id) {
+    const body = {
+      title:    document.getElementById(`e-title-${id}`).value.trim(),
+      type:     document.getElementById(`e-type-${id}`).value,
+      language: document.getElementById(`e-lang-${id}`).value.trim(),
+      details:  document.getElementById(`e-details-${id}`).value.trim()
+    };
+    try {
+      const res = await fetch(`${BACKEND_URL}/logs/${id}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error();
+      fetchLogs();
+    } catch { alert('Failed to update entry.'); }
+  }
+
+  async function deleteLog(id) {
+    if (!confirm('Delete this entry?')) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/logs/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      fetchLogs();
+    } catch { alert('Failed to delete entry.'); }
+  }
+
+  fetchLogs();
+</script>
+</body>
+</html>
