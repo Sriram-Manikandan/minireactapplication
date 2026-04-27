@@ -1,0 +1,12 @@
+{
+  "name": "fridgepolice",
+  "version": "1.0.0",
+  "scripts": {
+    "server": "node server/index.js",
+    "start": "npm run server"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  }
+}
