@@ -5,20 +5,22 @@ export const fetchTasks = async () => {
   return response.json();
 };
 
-export const createTask = async (title) => {
+export const createTask = async (title, important = false) => {
   const response = await fetch(`${API_URL}/tasks`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title })
+    body: JSON.stringify({ title, important })
   });
   return response.json();
 };
 
-export const updateTaskStatus = async (id, completed) => {
+export const updateTaskStatus = async (id, completed, important) => {
+  const payload = { completed };
+  if (important !== undefined) payload.important = important;
   const response = await fetch(`${API_URL}/tasks/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ completed })
+    body: JSON.stringify(payload)
   });
   return response.json();
 };
