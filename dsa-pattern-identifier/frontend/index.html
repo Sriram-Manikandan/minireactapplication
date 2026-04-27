@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DSA Pattern Identifier</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #38bdf8;
+      margin-bottom: 8px;
+    }
+
+    p.subtitle {
+      color: #94a3b8;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 28px;
+      width: 100%;
+      max-width: 700px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+
+    textarea {
+      width: 100%;
+      height: 160px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #e2e8f0;
+      padding: 12px;
+      font-size: 0.95rem;
+      resize: vertical;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    textarea:focus { border-color: #38bdf8; }
+
+    button {
+      margin-top: 16px;
+      width: 100%;
+      padding: 13px;
+      background: #38bdf8;
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #7dd3fc; }
+    button:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+
+    #loading {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+      color: #38bdf8;
+      font-size: 0.95rem;
+    }
+
+    #output {
+      display: none;
+      margin-top: 24px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 20px;
+      white-space: pre-wrap;
+      line-height: 1.7;
+      font-size: 0.95rem;
+      color: #e2e8f0;
+    }
+
+    #error {
+      display: none;
+      margin-top: 16px;
+      color: #f87171;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>DSA Pattern Identifier</h1>
+  <p class="subtitle">Paste a problem statement. Get the pattern, the reason, and where to start.</p>
+
+  <div class="card">
+    <label for="input">Problem Statement</label>
+    <textarea id="input" placeholder="e.g. Given an array of integers, find the maximum sum of any contiguous subarray of size k..."></textarea>
+    <button id="btn" onclick="generate()">Identify Pattern →</button>
+    <p id="loading">⏳ Analysing problem...</p>
+    <p id="error"></p>
+    <div id="output"></div>
+  </div>
+
+  <script>
+    const BACKEND_URL = 'http://localhost:3000'; // Replace with Render URL before deploying
+
+    async function generate() {
+      const input = document.getElementById('input').value.trim();
+      const btn = document.getElementById('btn');
+      const loading = document.getElementById('loading');
+      const output = document.getElementById('output');
+      const error = document.getElementById('error');
+
+      if (!input) {
+        error.style.display = 'block';
+        error.textContent = 'Please paste a problem statement first.';
+        return;
+      }
+
+      // Reset UI
+      error.style.display = 'none';
+      output.style.display = 'none';
+      loading.style.display = 'block';
+      btn.disabled = true;
+      btn.textContent = 'Analysing...';
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userInput: input })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Something went wrong.');
+        }
+
+        output.textContent = data.result;
+        output.style.display = 'block';
+
+      } catch (err) {
+        error.style.display = 'block';
+        error.textContent = 'Error: Could not reach the server. Make sure the backend is running.';
+      } finally {
+        loading.style.display = 'none';
+        btn.disabled = false;
+        btn.textContent = 'Identify Pattern →';
+      }
+    }
+  </script>
+
+</body>
+</html>
