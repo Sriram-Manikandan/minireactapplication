@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FridgePolice 🚔</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="logo">🚔 FridgePolice</div>
+      <div class="tagline">Keeping the fridge honest</div>
+    </header>
+
+    <main>
+      <section class="scenarios">
+        <span class="pill pill-1">① Race Condition</span>
+        <span class="pill pill-2">② Approval Expiry (60s)</span>
+        <span class="pill pill-3">③ Duplicate Names</span>
+        <span class="pill pill-4">④ Reality Check</span>
+      </section>
+
+      <section class="card">
+        <h2>Add Food Item</h2>
+        <div class="form-row">
+          <input id="f-name" placeholder="Food name" />
+          <input id="f-owner" placeholder="Your name" />
+          <input id="f-qty" type="number" placeholder="% remaining" min="1" max="100" value="100" />
+          <button class="btn-yellow" id="btn-add">+ Add to Fridge</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>🧊 Fridge Inventory</h2>
+        <div id="food-list" class="food-grid"></div>
+      </section>
+
+      <section class="card">
+        <h2>📋 Active Approvals</h2>
+        <div id="approval-list" class="approval-grid"></div>
+      </section>
+
+      <section class="card">
+        <h2>📜 Activity Log</h2>
+        <div id="activity-log"></div>
+      </section>
+    </main>
+
+    <!-- Request Modal -->
+    <div id="overlay" class="hidden">
+      <div id="modal">
+        <button id="modal-close">✕</button>
+        <div id="modal-body"></div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
