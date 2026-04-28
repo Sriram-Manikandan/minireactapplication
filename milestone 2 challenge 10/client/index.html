@@ -1,10 +1,516 @@
 <!DOCTYPE html>
-<html>
-<body>
-<h1>Dorm Marketplace</h1>
-<input id="name" placeholder="Item"/>
-<button onclick="addItem()">Add</button>
-<ul id="items"></ul>
-<script src="app.js"></script>
-</body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dorm Marketplace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ── Reset & Variables ─────────────────────────────────────── */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg:       #0d0d0d;
+        --surface:  #161616;
+        --card:     #1e1e1e;
+        --border:   #2a2a2a;
+        --accent:   #e8ff47;
+        --accent2:  #ff6b35;
+        --text:     #f0f0f0;
+        --muted:    #777;
+        --green:    #4cff91;
+        --red:      #ff4c6a;
+        --yellow:   #ffd447;
+        --radius:   12px;
+        --transition: 0.2s ease;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 15px;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* ── Header ────────────────────────────────────────────────── */
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 40px;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        background: rgba(13,13,13,0.92);
+        backdrop-filter: blur(12px);
+        z-index: 100;
+      }
+
+      .logo {
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 1.4rem;
+        letter-spacing: -0.5px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .logo-dot {
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        background: var(--accent);
+        display: inline-block;
+      }
+
+      .header-tag {
+        font-size: 0.72rem;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        border: 1px solid var(--border);
+        padding: 5px 12px;
+        border-radius: 20px;
+      }
+
+      /* ── Layout ─────────────────────────────────────────────────── */
+      .main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+      }
+
+      /* ── Section Title ──────────────────────────────────────────── */
+      .section-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 24px;
+      }
+
+      .section-title {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 1.5rem;
+        letter-spacing: -0.3px;
+      }
+
+      .section-count {
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      /* ── Toast ──────────────────────────────────────────────────── */
+      #toast-container {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .toast {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px 18px;
+        font-size: 0.88rem;
+        max-width: 300px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        animation: slideIn 0.3s ease forwards;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .toast.success { border-left: 3px solid var(--green); }
+      .toast.error   { border-left: 3px solid var(--red); }
+      .toast.info    { border-left: 3px solid var(--accent); }
+
+      @keyframes slideIn {
+        from { opacity: 0; transform: translateX(40px); }
+        to   { opacity: 1; transform: translateX(0); }
+      }
+
+      /* ── List Form ──────────────────────────────────────────────── */
+      .list-form-wrapper {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 28px;
+        margin-bottom: 48px;
+      }
+
+      .form-title {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .form-title::before {
+        content: '+';
+        width: 24px; height: 24px;
+        background: var(--accent);
+        color: #000;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        font-weight: 800;
+        flex-shrink: 0;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 14px;
+      }
+
+      .form-grid .full { grid-column: 1 / -1; }
+
+      label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+
+      input, select {
+        width: 100%;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 14px;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color var(--transition);
+      }
+
+      input:focus, select:focus {
+        border-color: var(--accent);
+      }
+
+      select option { background: var(--card); }
+
+      .btn {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 0.85rem;
+        letter-spacing: 0.04em;
+        border: none;
+        border-radius: 8px;
+        padding: 11px 22px;
+        cursor: pointer;
+        transition: all var(--transition);
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: #000;
+      }
+      .btn-primary:hover { background: #d4eb3a; transform: translateY(-1px); }
+
+      .btn-claim {
+        background: transparent;
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        width: 100%;
+        margin-top: 14px;
+      }
+      .btn-claim:hover { background: var(--accent); color: #000; }
+
+      .btn-confirm {
+        background: var(--green);
+        color: #000;
+        width: 100%;
+        margin-top: 8px;
+      }
+      .btn-confirm:hover { opacity: 0.85; }
+
+      .btn-remove {
+        background: transparent;
+        border: 1px solid var(--red);
+        color: var(--red);
+        width: 100%;
+        margin-top: 8px;
+        font-size: 0.78rem;
+      }
+      .btn-remove:hover { background: var(--red); color: #fff; }
+
+      .btn-submit-row {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 6px;
+      }
+
+      /* ── Filter Bar ─────────────────────────────────────────────── */
+      .filter-bar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+      }
+
+      .filter-btn {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 500;
+        padding: 7px 16px;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all var(--transition);
+      }
+
+      .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+      .filter-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+
+      /* ── Item Grid ──────────────────────────────────────────────── */
+      .items-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+      }
+
+      .item-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 22px;
+        display: flex;
+        flex-direction: column;
+        transition: border-color var(--transition), transform var(--transition);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .item-card:hover { border-color: #3a3a3a; transform: translateY(-2px); }
+
+      .item-card.claimed { border-left: 3px solid var(--yellow); }
+      .item-card.sold    { border-left: 3px solid var(--muted); opacity: 0.55; }
+
+      .card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 14px;
+      }
+
+      .item-category {
+        font-size: 0.7rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        background: var(--surface);
+        padding: 4px 10px;
+        border-radius: 20px;
+      }
+
+      .status-badge {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: 4px 10px;
+        border-radius: 20px;
+      }
+
+      .status-available { background: rgba(76,255,145,0.12); color: var(--green); }
+      .status-claimed   { background: rgba(255,212,71,0.12); color: var(--yellow); }
+      .status-sold      { background: rgba(120,120,120,0.12); color: var(--muted); }
+
+      .item-name {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 6px;
+        line-height: 1.3;
+      }
+
+      .item-meta {
+        font-size: 0.82rem;
+        color: var(--muted);
+        display: flex;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+
+      .item-price {
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 1.4rem;
+        color: var(--accent);
+        margin-bottom: 4px;
+      }
+
+      .item-price span {
+        font-size: 0.75rem;
+        font-weight: 400;
+        color: var(--muted);
+        font-family: 'DM Sans', sans-serif;
+      }
+
+      .card-footer { margin-top: auto; }
+
+      /* ── Claim input inline ─────────────────────────────────────── */
+      .claim-section { margin-top: 14px; }
+
+      .claim-input-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .claim-input-row input { flex: 1; }
+
+      /* ── Countdown ──────────────────────────────────────────────── */
+      .countdown {
+        font-size: 0.8rem;
+        color: var(--yellow);
+        text-align: center;
+        margin-top: 6px;
+        font-weight: 500;
+      }
+
+      .countdown.urgent { color: var(--red); animation: pulse 1s infinite; }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+      }
+
+      /* ── Claimed info ───────────────────────────────────────────── */
+      .claimed-info {
+        font-size: 0.83rem;
+        color: var(--yellow);
+        margin-top: 10px;
+        padding: 8px 12px;
+        background: rgba(255,212,71,0.07);
+        border-radius: 8px;
+      }
+
+      /* ── Empty state ────────────────────────────────────────────── */
+      .empty-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--muted);
+      }
+
+      .empty-state h3 {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+        color: var(--text);
+      }
+
+      /* ── Responsive ─────────────────────────────────────────────── */
+      @media (max-width: 700px) {
+        header { padding: 16px 20px; }
+        .main  { padding: 28px 16px 60px; }
+        .form-grid { grid-template-columns: 1fr; }
+        .form-grid .full { grid-column: 1; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <header>
+      <div class="logo">
+        <span class="logo-dot"></span>
+        DormMarket
+      </div>
+      <div class="header-tag">Campus Marketplace</div>
+    </header>
+
+    <div id="toast-container"></div>
+
+    <main class="main">
+
+      <!-- ── List Item Form ── -->
+      <div class="list-form-wrapper">
+        <div class="form-title">List an Item</div>
+        <div class="form-grid">
+          <div>
+            <label for="f-name">Item Name</label>
+            <input id="f-name" type="text" placeholder="e.g. Calculus Textbook" />
+          </div>
+          <div>
+            <label for="f-seller">Your Name</label>
+            <input id="f-seller" type="text" placeholder="e.g. Priya" />
+          </div>
+          <div>
+            <label for="f-price">Price (₹)</label>
+            <input id="f-price" type="number" min="0" placeholder="0" />
+          </div>
+          <div>
+            <label for="f-category">Category</label>
+            <select id="f-category">
+              <option value="Textbooks">Textbooks</option>
+              <option value="Appliances">Appliances</option>
+              <option value="Bikes">Bikes</option>
+              <option value="Furniture">Furniture</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="f-condition">Condition</label>
+            <select id="f-condition">
+              <option value="Like New">Like New</option>
+              <option value="Good">Good</option>
+              <option value="Fair">Fair</option>
+              <option value="Worn">Worn</option>
+            </select>
+          </div>
+          <div class="btn-submit-row">
+            <button class="btn btn-primary" onclick="listItem()">Post Listing</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Listings ── -->
+      <div class="section-header">
+        <div class="section-title">Listings</div>
+        <div class="section-count" id="count-label">— items</div>
+      </div>
+
+      <div class="filter-bar" id="filter-bar">
+        <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All</button>
+        <button class="filter-btn" data-filter="available" onclick="setFilter('available', this)">Available</button>
+        <button class="filter-btn" data-filter="claimed" onclick="setFilter('claimed', this)">Claimed</button>
+        <button class="filter-btn" data-filter="sold" onclick="setFilter('sold', this)">Sold</button>
+      </div>
+
+      <div class="items-grid" id="items-grid">
+        <!-- populated by JS -->
+      </div>
+
+    </main>
+
+    <script src="app.js"></script>
+  </body>
 </html>
